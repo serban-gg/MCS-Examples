@@ -1,0 +1,20 @@
+mcs
+with MyComponents
+constants
+   max_compute_time:aadlinteger = 50;
+    
+theorems
+ Compute_Budget<root:C_Impl>(mode:I_Mode, maxlimit:aadlinteger) <= 
+    **"Maximum compute time for " root " in mode " mode " is less then " maxlimit**  
+   let modeset : set<I_Mode> = mode.mapped_set();  -- get the equivalent modes set
+   (forall (t:I_Thread).t.has_property("Compute_Execution_Time" , modeset)
+		                 fail **"Failed for thread " t **) 
+		                 and ({thr.property("Compute_Execution_Time" , modeset).upper()
+						           for (thr:I_Thread)}).sum() <= maxlimit 
+ My_Process_Budget<root:nil> () <= 
+    **"Check compute execution budget for process autopilot.modal_thread "**
+   let my_process : C_Impl = classifier(MyComponents::autopilot.modal_proc);	
+   let top_modes : set<I_Mode> = my_process.modes();
+   forall(m in top_modes). check Compute_Budget<my_process>(m, max_compute_time)
+constraints
+    check My_Process_Budget<nil>()
