@@ -1,0 +1,69 @@
+mcs
+with ddd, sss , mypackage                      	-- name linking errors
+import "blah","bbb"
+
+types	
+	type listofints = list<aadlinteger>;		-- user defined types 
+	type myunion = union(set<aadlinteger>,set<aadlstring>,listofints);
+	type maptype = [aadlstring to listofints];	-- mapping pair key type, value type
+	type intmap = set<maptype>;					-- maps are sets of mapping pairs
+	type intmap1 = set<[aadlstring to aadlinteger]>;
+	type mode_elements = union (I_Mode, I_Mode_Transition, I_Mode_Trigger_Id);
+	type compare_result = enumeration('less', 'equal', 'greater');
+
+constants	
+	my_intset1 : {aadlinteger} = {};            -- set type syntax compatible to Resolute
+	my_intset2 : set<aadlinteger> = {1,2,3,4};  -- new set type syntax
+	my_stringset : set<aadlstring> = {'aaa','bbb'}; 
+	my_list : listofints = list{3,4,5};
+	my_map : set<maptype> = {['s',list{2}],['qq',list{3,4,5}],['www',list{8,8}]};
+	my_classifier : C_Impl =  classifier(ddd::y) ;
+	my_set: set<T_Element> = {classifier(ddd::x), my_classifier, reference(x.y.z)};
+
+	s1 : string = 'a global string constant';   -- shortcut for aadlstring, aadlinteger
+	x : aadlreal = 3.1415e-25;					-- and aadlreal supported
+	yy : int = -12345 .. 55; 
+												
+functions
+	string_compare(a:aadlstring,b:aadlstring):compare_result = -- syntax similar to Real/Resolute function expressions
+										if a.case_eq(b) then 'equal' else 
+											if a.case_less(b) then 'less' else 'greater' 
+																				
+	count_to_10 (start:aadlinteger) : bool =      -- bool shortcut for aadlboolean
+								let limit:aadlreal = 10.45 ;				
+									if (start>limit) 
+										then false 
+										else let setx:set<aadlinteger> = 1 ..10  <set<aadlinteger>>; 
+											 forall (y in setx). true											 
+theorems
+	useless<root:nil>() <= ** "This theorem can never fail." s **
+	 	let s : aadlstring = 'How can this fail?';
+	 	3+5=8 fail ** "This is really bad" **
+	 
+	fred <root:T_Classifier>() <= ** "stuff" **
+		let aa : aadlinteger = (-25.7 +37.70).floor();      -- method syntax for floor function                  
+		let x : aadlreal = 3.2e-5.ceiling()<real>.floor()<real>; 	-- methods chain, suffix type casting
+		let xx : aadlreal = floor(ceiling(3.2e-5))<real>; 	-- functions chain
+		let z : enumeration ('red','white','blue')= 'red';
+		let barney :  bool = true ;		
+		let cref:T_Classifier = classifier (mypackage::mythreadgroup) ;	-- classifier and reference literals
+		let an_element: T_Element = reference (mythreadgroup.subcomponent) ;	
+		let xxxt: string = 'abc'.string_compare(x<string>) ;   -- both method and function call format
+		let xxxt1: string = string_compare('abc',x<string>) ;  -- x casted as string
+		let filter_set : set<string> = {cc.qualified_name().concat(str) 
+												for(cc:I_Component)(str in z)|str.eq('red')
+		};	
+		let my_root_instance: I_Component = iroot<I_Component>;
+		
+		check useless<nil>()
+		
+	another_theorem<root:C_Impl> (feat:I_Feature, p:property_ref)	<= 
+				**"feature " feat "has property " p "set to zero "** 
+				**"and theorem fred is true"**  				  
+		let my_root_element : C_Impl = root;
+			feat.has_property(p)=true fail ** "property " p "does not exist" ** and
+			feat.property(p)<aadlinteger> = 0 and     -- shortcuts #? and # supported
+			check fred<my_root_element>() and 		  -- for has_property and property
+			check fred<my_classifier>()
+	constraints
+	     check fred<mypackage::mythreadgroup>()   -- checked on a classifier imported in the with list
