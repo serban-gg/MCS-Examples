@@ -7,14 +7,14 @@ annex MCS {**
 	
 functions
 	
-	-- c omputational function to calculate total of weight budget from subcomponents
+	-- a computational function to calculate total of weight budget from subcomponents
 	AddSubcomponentWeightBudgets(self: I_Component) : real = 
 		sum({WeightBudget(t) for (t in subcomponents(self))}) 
 
 	-- total of weight budgets of all components
 	AddAllBudgets(self : I_Component) : real = 
-		let subs :{I_Component} = subcomponents(self);
-		if (length(subs) = 0) then
+		let subs :{I_Component} = self.subcomponents();
+		if (subs.size() = 0) then
 			WeightBudget(self)
 		else
 			sum({WeightBudget(t) for (t: subs)}) 
@@ -36,7 +36,7 @@ functions
 -- calcuate the ratio of components with budget vs. all subcomponents
 	SubcomponentWeightBudgetCoveragePercent(self:I_Component): int = 
 		let subs: {I_Component} = subcomponents(self); 
- 		sum({ 100 for (sub in subs) | sub.has_property("SEI::GrossWeight")})/ (length(subs))
+ 		sum({ 100 for (sub in subs) | sub.has_property("SEI::GrossWeight")})/ (subs.size())
  	
  	HasWeightBudget(t : I_Component) : bool =  
  		has_property(t,"SEI::GrossWeight") fail ** t " has no weight" ** 

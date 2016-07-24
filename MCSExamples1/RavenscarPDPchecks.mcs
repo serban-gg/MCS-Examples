@@ -1,14 +1,15 @@
 mcs
-with PDPandRavenscarConstraints
-with MyComponents
+with PDPandRavenscarConstraints     -- to access the theorems library
+with MyComponents     				-- and other packages to be checked            
 
-theorems
+
+theorems							-- define local theorem to verify all imported packages
    Verify_Periodic_Data_Ports<root:nil>() <= **"Verify all imported packages for having"
             "  threads, thread groups and processes with data ports only and periodic"**
             forall (p:T_Package). check Check_Package_PDP<nil>(p) 
                                      fail **" Failed for package " 	p.qualified_name() **
 constraints
    check Periodic_Data_Ports_Only<MyComponents::autopilot.modal_proc>() -- verify a classifier 
-   check Is_Whole_Package_PDP<nil>(package(PackageToCheck1))      -- verify a package
-   check Verify_Periodic_Data_Ports<nil>()                        -- verify all imported          
-     
+   check Is_Whole_Package_PDP<nil>(package(MyComponents))      -- verify package MyComponents
+   check Verify_Periodic_Data_Ports<nil>()                     -- verify all imported packages         
+   check Check_Package_Ravenscar<nil>(package(MyComponents))   -- verify MyComponents is Ravenscar compliant

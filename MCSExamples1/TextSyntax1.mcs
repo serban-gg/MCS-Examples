@@ -15,7 +15,7 @@ constants
 	my_intset1 : {aadlinteger} = {};            -- set type syntax compatible to Resolute
 	my_intset2 : set<aadlinteger> = {1,2,3,4};  -- new set type syntax
 	my_stringset : set<aadlstring> = {'aaa','bbb'}; 
-	my_list : listofints = list{3,4,5};
+	my_list : listofints = list{3,4,5};			-- list and map constructors
 	my_map : set<maptype> = {['s',list{2}],['qq',list{3,4,5}],['www',list{8,8}]};
 	my_classifier : C_Impl =  classifier(ddd::y) ;
 	my_set: set<T_Element> = {classifier(ddd::x), my_classifier, reference(x.y.z)};
@@ -45,15 +45,16 @@ theorems
 		let x : aadlreal = 3.2e-5.ceiling()<real>.floor()<real>; 	-- methods chain, suffix type casting
 		let xx : aadlreal = floor(ceiling(3.2e-5))<real>; 	-- functions chain
 		let z : enumeration ('red','white','blue')= 'red';
-		let barney :  bool = true ;		
+		let barney :  bool = true ;	
+		let expr : string = (4 + xx * aa / x)<string>;	
 		let cref:T_Classifier = classifier (mypackage::mythreadgroup) ;	-- classifier and reference literals
 		let an_element: T_Element = reference (mythreadgroup.subcomponent) ;	
-		let xxxt: string = 'abc'.string_compare(x<string>) ;   -- both method and function call format
-		let xxxt1: string = string_compare('abc',x<string>) ;  -- x casted as string
+		let xxxt: string = 'abc'.string_compare(x<string>)<string> ;   -- both method and function call format
+		let xxxt1: compare_result = string_compare('abc',x<string>) ;  -- x casted as string
 		let filter_set : set<string> = {cc.qualified_name().concat(str) 
 												for(cc:I_Component)(str in z)|str.eq('red')
-		};	
-		let my_root_instance: I_Component = iroot<I_Component>;
+										};	
+		let my_root_instance: I_Component = iroot<I_Component>;        -- iroot keyword is the root classifier instance
 		
 		check useless<nil>()
 		
@@ -66,4 +67,4 @@ theorems
 			check fred<my_root_element>() and 		  -- for has_property and property
 			check fred<my_classifier>()
 	constraints
-	     check fred<mypackage::mythreadgroup>()   -- checked on a classifier imported in the with list
+	     check fred <mypackage::mythreadgroup>()      -- checked on a classifier imported in the with list

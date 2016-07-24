@@ -40,7 +40,7 @@ with Data_Model;
     cnx3 : port act.step_order -> mot.step_order;
     cnx4 : port mot.step_done -> act.step_completed;
  annex mcs {**  
-	prove check_process(this)
+	prove check_process(this)       -- same as in Resolute
 **};
   end proc.impl; 
 

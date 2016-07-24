@@ -9,9 +9,9 @@ theorems
    let modeset : set<I_Mode> = mode.mapped_set();  -- get the equivalent modes set
     
     -- check if all threads have the property defined
-   (forall (t:I_Thread).t.has_property("Compute_Execution_Time" , modeset)
+    forall (t:I_Thread).t.has_property("Compute_Execution_Time" , modeset)
    						-- Use of fail in a theorem forces a return 
-		                 fail **"Failed for thread " t **)											         
+		                 fail **"Failed for thread " t **											         
 		                 and 
 		                 -- build set of upper limits, sum up and check against limit
 		                 {thr.property("Compute_Execution_Time" , modeset).upper()

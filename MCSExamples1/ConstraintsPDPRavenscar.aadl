@@ -11,23 +11,19 @@ public
 		-- a predicate function, check if 
 		-- connection exists between t and d
 		(d.owner() = t.owner()) and 
-		(let conn : set<I_Connection> = t.owner().connections(); 
+		(let conn : set<I_Connection> = t.owner().connections();  -- built-in functions called as methods
 		{c for (c in conn)| c.source().owner() = t  and 					    
                             c.destination().owner() = d}  <> empty)
 -- Public theorem declarations, can be invoked in check statements of 
 -- other theorems
 
 	 theorems
-		Check_Package_PDP<root:nil>(p:T_Package) <= 
-						**"All threads in package’ p ‘are periodic and have only data ports"**
+	 -- Constraints for classifiers having only Periodic Data Ports
+		Is_Whole_Package_PDP<root:nil>(p:T_Package) <= 
+		  **"All classifiers in package" p "have subcomponent processes and threads"
+						" with only periodic data ports"**
 			forall (c in p.classifiers()).check Periodic_Data_Ports_Only<c>()
 
-		Check_Package_Ravenscar<root:nil>(p:T_Package) <= **"All threads in package" p 
-  														"satisfy the Ravenscar constraints"**
-			forall (c in p.classifiers()). c.category() = "system implementation" =>
-					check No_Aperiodic_Threads<c>() and
-					check Shared_Data_Accessor_Has_Priority_Ceiling<c>() and
-					check PCP_Static_Check<c>()
 
 		Periodic_Data_Ports_Only () <=  		-- root default is C_Impl if not specified
  						**"No event ports and all threads periodic for classifier " root** 
@@ -39,6 +35,7 @@ public
   								t.property("Thread_Properties::Dispatch_Protocol")= "Periodic" 
 					
 		
+		 -- Group of theorems enforcing the Ravenscar constraints
 		 
 	     No_Aperiodic_Threads <root:C_Impl> () <=
 									-- Can be called only on instance trees of
@@ -47,7 +44,7 @@ public
 
 	         forall (t : I_Thread).
 	            t.has_property("Thread_Properties::Dispatch_Protocol") => 
-				let p:aadlstring = t.property("Thread_Properties::Dispatch_Protocol");  
+				let p:string = t.property("Thread_Properties::Dispatch_Protocol")<string>;  
 				((p <> 'Aperiodic') and (p <> 'Background'))
 	     
 		Shared_Data_Accessor_Has_Priority_Ceiling <root:C_Impl>  () <= 
@@ -55,9 +52,9 @@ public
 	         forall (d :I_Data).
 	              let accessor_threads:{I_Thread} = {t for (t:I_Thread)|  t.Has_Access_To(d)};
 	             (accessor_threads.size()  <= 1) or 
-		         (d.has_property("Thread_Properties::Concurrency_Control_Protocol") 
-			 	  and
-   				 (d.property("Thread_Properties::Concurrency_Control_Protocol") = 'Priority_Ceiling'))
+		         (d.#?("Thread_Properties::Concurrency_Control_Protocol") 
+			 	  and					-- shortcuts for has_property and property
+   				 (d.#("Thread_Properties::Concurrency_Control_Protocol") = 'Priority_Ceiling'))
 	     
 
 	      PCP_Static_Check  <root:C_Impl> ()<=
@@ -66,19 +63,28 @@ public
 					"Check wether all protected data priorities are higher than the maximum"
 					"priority of the threads accessing the data , and all from the same processor"**
 
-			forall (d:I_Data).		
-			-- Set of the threads the acceed to the protected data
+			forall (d:I_Data). 		
+			-- Set of the threads that have access to the protected data
 				let accessor_threads:{I_Thread} = {t for (t:I_Thread)|t.Has_Access_To(d)};
 
 			-- Set of the processors that the accessor threads are bound to
 				let threads_processors:{I_Processor} = 
 					{p for (t in accessor_threads) (p:I_Processor) | t.Is_Bound_To(p)};
-					
-				not d.has_property("Concurrency_Control_Protocol") or
-				d.property("Concurrency_Control_Protocol") <> "Protected_Access" or
+				
+				(d.has_property("Concurrency_Control_Protocol") =>  
+				d.property("Concurrency_Control_Protocol") <> "Protected_Access") or
 				d.property("ARAO::Priority") >= 
 					max({t.property("ARAO::Priority")<int> for (t in accessor_threads)}) and
 				thread_processors.size() <= 1
+
+-- check all System Implementation classifiers in a package for Ravenscar complaince
+
+		Check_Package_Ravenscar<root:nil>(p:T_Package) <= **"All threads in package" p 
+  														"satisfy the Ravenscar constraints"**
+			forall (c in p.classifiers()). c.category() = "system implementation" =>
+					check No_Aperiodic_Threads<c>() and
+					check Shared_Data_Accessor_Has_Priority_Ceiling<c>() and
+					check PCP_Static_Check<c>()
 
    **};
 	

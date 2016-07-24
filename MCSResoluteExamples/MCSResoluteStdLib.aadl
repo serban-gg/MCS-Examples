@@ -6,27 +6,27 @@ annex mcs {**
 -- Binding
 ------------
 functions
-	bound(logical : T_Element, physical : I_Component) : bool =
+	bound(logical : T_Instance, physical : I_Component) : bool =
   		memory_bound(logical, physical) or
   		connection_bound(logical, physical) or
   		processor_bound(logical, physical)
   
-	memory_bound(logical : T_Element, physical : I_Component) : bool =
+	memory_bound(logical : T_Instance, physical : I_Component) : bool =
   		has_property(logical, "Deployment_Properties::Actual_Memory_Binding") and
   		has_member(property(logical, "Deployment_Properties::Actual_Memory_Binding",physical))
   		
  -- same function using method syntax:
  
-	memory_bound_method_syntax(logical : T_Element, physical : I_Component) : bool =
+	memory_bound_method_syntax(logical : T_Instance, physical : I_Component) : bool =
   		logical.has_property("Deployment_Properties::Actual_Memory_Binding") and
   		logical.property("Deployment_Properties::Actual_Memory_Binding").has_member(physical)
 
 
-connection_bound(logical : T_Element, physical : I_Component) : bool =
+connection_bound(logical : T_Instance, physical : I_Component) : bool =
   		has_property(logical, "Deployment_Properties::Actual_Connection_Binding") and
   		has_member(property(logical, "Deployment_Properties::Actual_Connection_Binding",physical))
 
-processor_bound(logical : T_Element, physical : I_Component) : bool =
+processor_bound(logical : T_Instance, physical : I_Component) : bool =
   		has_property(logical, "Deployment_Properties::Actual_Processor_Binding") and
   		has_member(property(logical, "Deployment_Properties::Actual_Processor_Binding",physical))
 ----------------
@@ -72,10 +72,10 @@ flatten_feature(f : I_Feature) : {I_Feature} =
 ----------------
 -- Containment
 ----------------
-contained(a : T_Element, b : I_Component) : bool =
+contained_in(a : T_Instance, b : I_Component) : bool =
   has_parent(a) and (parent(a) = b or contained(parent(a), b))
 
-containing_component(a : T_Element) : I_Component =
+containing_component(a : T_Instance) : I_Component =
   if a instanceof I_Component then  a <I_Component> else containing_component(parent(a))
 
 **};
