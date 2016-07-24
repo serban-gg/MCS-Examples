@@ -1,0 +1,36 @@
+mcs
+with MyPackage
+constants
+   max_threads:aadlinteger = 5;   max_dir_owned_tg:aadlinteger = 3;
+   max_ep_per_process:aadlinteger = 10;
+functions
+   Direct_Query_Set (e:I_Component,tlit:Type_Literal): set<I_Component> = 
+		{s for (s in e.subcomponents())| s.element_type() = tlit}
+   Query_Set (e:I_Component,tlit:Type_Literal): set<I_Component> = 
+	Direct_Query_Set(e,tlit).union({tt for (sub in e.subcomponents())
+	     									(tt in sub.Query_Set(tlit))})
+   TEV_Limits(t:{I_Thread},tg:{I_Thread_Group},ep:{I_Event_Port}):bool =
+  		(t.size() <= max_threads) and (tg.size() <= max_dir_owned_tg) 
+		         		      and (ep.size() <= max_ep_per_process)  
+ theorems
+   Classifier_TEV_Within_Limits<root:C_Impl>() <= 
+		    ** "Query examples in classifier instance context theorem" **
+  
+      let own_tg : set<I_Thread_Group> = iroot.Direct_Query_Set("I_Thread_Group");
+      let all_threads:set<I_Thread> = iroot.Query_Set("I_Thread");
+      let own_event_ports:set<I_Event_Port> = {ep for (f in iroot.features())
+						     						  (ep:I_Event_Port) 
+						     				         | ep.is_owned_by(iroot) or ep.contained(f)};
+   		TEV_Limits (all_threads,own_tg,own_event_ports) 
+   					fail ** "Failed for " root " tg= " own_tg.size() " t= " all_threads.size() 
+	      						  			   " ep= " own_event_ports.size() ** 
+	      	
+
+   All_Impl_In_Package_TEV_Limits<root:nil>(pack:T_Package) <= 
+   										**"Nested call of instance context theorems for all" 
+										  "component implementations in a package"** 
+      let cimpl : set<C_Impl> = {c for (c in pack.classifiers())| c instanceof C_Impl};
+      forall (ci in cimpl). (check Root_Classifier_Limits<ci>() fail**"Failed for "	
+   															ci.qualified_name()**)
+ 
+ 

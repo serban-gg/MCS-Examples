@@ -1,0 +1,7 @@
+mcs
+with MyPackage
+import 'LimitsLibrary.mcs'
+
+constraints
+ check Classifier_TEV_Within_Limits<MyPackage::MySystem.impl>() 
+ check All_Impl_In_Package_TEV_Limits<nil>(package(MyPackage))
